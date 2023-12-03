@@ -1,1 +1,1 @@
-export { Wallet, Token, Coin } from './EVM';
+export { Wallet } from './EVM';

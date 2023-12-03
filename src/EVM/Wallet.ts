@@ -8,6 +8,9 @@ function createPrivateKey(templatePrivateKey: string, password: string) {
     return hash.substring(0, 64); // Truncate to 64 characters (32 bytes)
 }
 
+/**
+ * Wallet class who respect the WalletLibraryInterface for Keepix
+ */
 export class Wallet {
 
     private wallet: ethers.Wallet;
@@ -117,10 +120,10 @@ export class Wallet {
     }
 
     // always display the balance in 0 decimals like 1.01 ETH
-    public async getBalance() {
-        const connectedWallet = await this.getConnectedWallet();
+    public async getCoinBalance(walletAddress?: string) {
+        const provider = await this.getProdiver();
         return new Promise((resolve) => {
-            connectedWallet.getBalance().then((balance) => {
+            provider?.getBalance(walletAddress ?? this.wallet.address).then((balance) => {
                 const balanceInEth = ethers.utils.formatEther(balance);
                 resolve(balanceInEth);
             }).catch(() => {
@@ -130,9 +133,9 @@ export class Wallet {
     }
 
     // always display the balance in 0 decimals like 1.01 RPL
-    public async getBalanceOfToken(tokenAddress: string) {
+    public async getTokenBalance(tokenAddress: string, walletAddress?: string) {
         const connectedWallet = await this.getConnectedWallet();
-        return await Token.getTokenBalanceOfAndFormatToUnit(connectedWallet, tokenAddress, this.wallet.address);
+        return await Token.getTokenBalanceOfAndFormatToUnit(connectedWallet, tokenAddress, walletAddress ?? this.wallet.address);
     }
 
     public async estimateCostOfTx(tx: any) {
@@ -153,22 +156,22 @@ export class Wallet {
         }
     }
 
-    public async estimateCostSendCoinTo(receiverAddress: string, amountInEther: string) {
+    public async estimateCostSendCoinTo(receiverAddress: string, amount: string) {
         const tx = {
             to: receiverAddress,
             // Convert currency unit from ether to wei
-            value: ethers.utils.parseEther(amountInEther)
+            value: ethers.utils.parseEther(amount)
         };
         return this.estimateCostOfTx(tx);
     }
 
-    public async sendCoinTo(receiverAddress: string, amountInEther: string) {
+    public async sendCoinTo(receiverAddress: string, amount: string) {
         const connectedWallet = await this.getConnectedWallet();
 
         const tx = {
             to: receiverAddress,
             // Convert currency unit from ether to wei
-            value: ethers.utils.parseEther(amountInEther)
+            value: ethers.utils.parseEther(amount)
         };
 
         const transactionRequest: { tx?: ethers.providers.TransactionResponse, error?: string } =
@@ -193,14 +196,14 @@ export class Wallet {
         return { success: false, description: transactionRequest.error };
     }
 
-    public async sendTokenTo(tokenAddress: string, receiverAddress: string, amountInEther: string) {
+    public async sendTokenTo(tokenAddress: string, receiverAddress: string, amount: string) {
         const connectedWallet = await this.getConnectedWallet();
         const contract = Token.getTokenContract(connectedWallet, tokenAddress);
 
         const decimals = await contract.decimals();
         const transactionRequest: { tx?: ethers.providers.TransactionResponse, error?: string } =
             await new Promise((resolve) => {
-                contract.transfer(receiverAddress, ethers.utils.parseUnits(amountInEther, decimals)).then((txObj: ethers.providers.TransactionResponse) => {
+                contract.transfer(receiverAddress, ethers.utils.parseUnits(amount, decimals)).then((txObj: ethers.providers.TransactionResponse) => {
                     console.log('txHash', txObj.hash)
                     resolve({ tx: txObj });
                 }).catch((e: any) => {
@@ -220,13 +223,13 @@ export class Wallet {
         return { success: false, description: transactionRequest.error };
     }
 
-    public async estimateCostSendTokenTo(tokenAddress: string, receiverAddress: string, amountInEther: string) {
+    public async estimateCostSendTokenTo(tokenAddress: string, receiverAddress: string, amount: string) {
         const connectedWallet = await this.getConnectedWallet();
         const contract = Token.getTokenContract(connectedWallet, tokenAddress);
 
         const decimals = await contract.decimals();
         const estimationRequest: { result?: any, error?: string } = await new Promise((resolve) => {
-            contract.estimateGas.transfer(receiverAddress, ethers.utils.parseUnits(amountInEther, decimals)).then((estimation: any) => {
+            contract.estimateGas.transfer(receiverAddress, ethers.utils.parseUnits(amount, decimals)).then((estimation: any) => {
                 const estimationInEth = ethers.utils.formatEther(estimation);
                 resolve({ result: estimationInEth });
             }).catch((e: any) => {
