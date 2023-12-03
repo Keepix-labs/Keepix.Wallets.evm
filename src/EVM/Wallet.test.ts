@@ -63,12 +63,12 @@ describe('basic wallet', () => {
 
   it('can getBalance', async () => {
     const wallet = new Wallet({ password: 'toto', type: 'ethereum', keepixTokens });
-    expect(await wallet.getBalance()).toEqual('0.0');
+    expect(await wallet.getCoinBalance()).toEqual('0.0');
   });
 
   it('can getTokenBalance', async () => {
     const wallet = new Wallet({ password: 'toto', type: 'ethereum', keepixTokens });
-    expect(await wallet.getBalanceOfToken("0xd33526068d116ce69f19a9ee46f0bd304f21a51f")).toEqual('0.0');
+    expect(await wallet.getTokenBalance("0xd33526068d116ce69f19a9ee46f0bd304f21a51f")).toEqual('0.0');
   });
 
   it('can estimate sendCoin', async () => {
