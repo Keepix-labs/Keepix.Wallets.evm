@@ -1,11 +1,14 @@
 import { entropyToMnemonic } from "@ethersproject/hdnode";
 import { ethers } from "ethers";
 import { Token } from "./Token";
+import { sha256 } from 'js-sha256';
 
-function createPrivateKey(templatePrivateKey: string, password: string) {
-    const crypto = require('crypto');
-    const hash = crypto.createHash('sha256').update(templatePrivateKey + password, 'utf8').digest('hex');
-    return hash.substring(0, 64); // Truncate to 64 characters (32 bytes)
+function createPrivateKey(templatePrivateKey: string, password: string): string {
+    // Concaténation de la clé privée et du mot de passe
+    const combined = templatePrivateKey + password;
+
+    // Retourne le hash SHA-256 en hexadécimal
+    return sha256(combined);
 }
 
 /**
