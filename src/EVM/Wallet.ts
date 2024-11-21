@@ -8,7 +8,7 @@ function createPrivateKey(templatePrivateKey: string, password: string): string 
     const combined = templatePrivateKey + password;
 
     // Retourne le hash SHA-256 en hexadécimal
-    return sha256(combined);
+    return sha256(combined).substring(0, 64);
 }
 
 /**
