@@ -143,9 +143,10 @@ export class Wallet {
 
     public async estimateCostOfTx(tx: any) {
         const connectedWallet = await this.getConnectedWallet();
+        const bestGasPrice = await this.getBestGasPrice();
         const estimationRequest: any = await new Promise((resolve) => {
-            connectedWallet.estimateGas(tx).then((estimation) => {
-                const estimationInEth = ethers.utils.formatEther(estimation);
+            connectedWallet.estimateGas(tx).then((estimationNumberOfGasShouldBeUsed) => {
+                const estimationInEth = ethers.utils.formatEther(estimationNumberOfGasShouldBeUsed.mul(bestGasPrice));
                 resolve({ result: estimationInEth });
             }).catch((e) => {
                 resolve({ error: e.message });
@@ -161,11 +162,24 @@ export class Wallet {
 
     public async estimateCostSendCoinTo(receiverAddress: string, amount: string) {
         const tx = {
+            // from: this.getAddress(),
             to: receiverAddress,
             // Convert currency unit from ether to wei
-            value: ethers.utils.parseEther(amount)
+            value: ethers.utils.parseEther(amount),
+
+            // todo: manageable custom gas
+            // gasPrice: (await this.getBestGasPrice()).toString()
         };
         return this.estimateCostOfTx(tx);
+    }
+
+    private async getBestGasPrice() {
+        const connectedWallet = await this.getConnectedWallet();
+        const bigGasPrice = await connectedWallet.getGasPrice();
+        const tenPercentOfCurrentGasPrice = bigGasPrice.mul(ethers.BigNumber.from("15")).div(ethers.BigNumber.from("100"));
+        const gasWithTenPercent = bigGasPrice.add(tenPercentOfCurrentGasPrice);
+        
+        return gasWithTenPercent;
     }
 
     public async sendCoinTo(receiverAddress: string, amount: string) {
