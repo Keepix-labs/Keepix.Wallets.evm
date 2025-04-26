@@ -23,6 +23,31 @@ const getTokenBalanceOf = async (connectedWallet: ethers.Wallet, tokenAddress: s
     return '0';
 }
 
+const getTokenDecimals = async (connectedWallet: ethers.Wallet, tokenAddress: string) => {
+    return await getTokenContract(connectedWallet, tokenAddress).decimals();
+}
+
+const getTokenSymbol = async (connectedWallet: ethers.Wallet, tokenAddress: string) => {
+    return await getTokenContract(connectedWallet, tokenAddress).symbol();
+}
+
+const getTokenName = async (connectedWallet: ethers.Wallet, tokenAddress: string) => {
+    return await getTokenContract(connectedWallet, tokenAddress).name();
+}
+
+const getTokenDetails = async (connectedWallet: ethers.Wallet, tokenAddress: string) => {
+    try {
+        return {
+            address: tokenAddress,
+            name: await getTokenContract(connectedWallet, tokenAddress).name(),
+            symbol: await getTokenContract(connectedWallet, tokenAddress).symbol(),
+            decimals: await getTokenContract(connectedWallet, tokenAddress).decimals(),
+        };
+    } catch (e) {
+        return undefined;
+    }
+}
+
 const getTokenBalanceOfAndFormatToUnit = async (connectedWallet: ethers.Wallet, tokenAddress: string, ofBalance: string, units: number | undefined = undefined) => {
     try {
         const balanceOUT = await getTokenBalanceOf(
@@ -39,5 +64,9 @@ const getTokenBalanceOfAndFormatToUnit = async (connectedWallet: ethers.Wallet, 
 export const Token = {
     getTokenContract,
     getTokenBalanceOf,
-    getTokenBalanceOfAndFormatToUnit
-};
+    getTokenBalanceOfAndFormatToUnit,
+    getTokenDecimals,
+    getTokenSymbol,
+    getTokenName,
+    getTokenDetails,
+}

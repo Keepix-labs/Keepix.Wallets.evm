@@ -141,6 +141,11 @@ export class Wallet {
         return await Token.getTokenBalanceOfAndFormatToUnit(connectedWallet, tokenAddress, walletAddress ?? this.wallet.address);
     }
 
+    public async getTokenDetails(tokenAddress: string) {
+        const connectedWallet = await this.getConnectedWallet();
+        return await Token.getTokenDetails(connectedWallet, tokenAddress);
+    }
+
     public async estimateCostOfTx(tx: any) {
         const connectedWallet = await this.getConnectedWallet();
         const bestGasPrice = await this.getBestGasPrice();
